@@ -135,27 +135,6 @@ activate (GtkApplication *app,
     window = GTK_WIDGET (gtk_builder_get_object (shared_vars::builder, "main_window"));
     gtk_window_set_application (GTK_WINDOW (window), app);
 
-    
-    // Get the horizontal_displacement_diagram picture widget and set its file
-    GtkWidget *horizontal_displacement_diagram = GTK_WIDGET (gtk_builder_get_object (shared_vars::builder, "horizontal_displacement_diagram"));
-    if (horizontal_displacement_diagram) {
-      GFile *image_file = g_file_new_for_path("horizontal-displacement-diagram.png");
-      gtk_picture_set_file(GTK_PICTURE(horizontal_displacement_diagram), image_file);
-      g_object_unref(image_file);
-    } else {
-      g_warning("Could not find diagram picture widget");
-    }
-
-    // Get the vertical_displacement_diagram picture widget and set its file
-    GtkWidget *vertical_displacement_diagram = GTK_WIDGET (gtk_builder_get_object (shared_vars::builder, "vertical_displacement_diagram"));
-    if (vertical_displacement_diagram) {
-      GFile *image_file = g_file_new_for_path("vertical-displacement-diagram.png");
-      gtk_picture_set_file(GTK_PICTURE(vertical_displacement_diagram), image_file);
-      g_object_unref(image_file);
-    } else {
-      g_warning("Could not find diagram picture widget");
-    }
-
     // Set up webcam image variables
     shared_vars::main_webcam_image = GTK_PICTURE(gtk_builder_get_object (shared_vars::builder, "main_webcam_image"));
     shared_vars::fov_webcam_image = GTK_PICTURE(gtk_builder_get_object (shared_vars::builder, "fov_webcam_image"));
