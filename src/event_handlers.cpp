@@ -118,6 +118,8 @@ void event_handlers::on_start_display_clicked(GtkWidget *widget, gpointer _) {
 
   std::thread t(shared_vars::listen_for_renderer_socket_and_call_dispatcher);
   t.detach();
+
+  shared_vars::renderer_program = new boost::process::child("renderer");
 }
 
 void event_handlers::on_renderer_success() {

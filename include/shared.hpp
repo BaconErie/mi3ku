@@ -10,6 +10,7 @@
 #include <opencv2/core/types.hpp>
 
 #include <boost/asio.hpp>
+#include <boost/process.hpp>
 
 #include <mutex>
 
@@ -50,6 +51,8 @@ namespace shared_vars {
     extern double right_eye_horizontal_angle;
     extern double left_eye_vertical_angle;
     extern double right_eye_vertical_angle;
+
+    extern boost::process::child* renderer_program;
 
     void listen_for_renderer_socket_and_call_dispatcher(); // Run this in a new thread, because socket accept blocks.
 }

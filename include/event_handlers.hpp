@@ -3,6 +3,7 @@
 #include <gtk/gtk.h>
 #include <iostream>
 #include <cmath>
+#include <boost/process.hpp>
 
 #include "gtk_signal_data.hpp"
 #include "shared.hpp"

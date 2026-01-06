@@ -37,6 +37,8 @@ namespace shared_vars {
     double right_eye_horizontal_angle = 0;
     double left_eye_vertical_angle = 0;
     double right_eye_vertical_angle = 0;
+
+    boost::process::child* renderer_program = nullptr;
 }
 
 void shared_vars::listen_for_renderer_socket_and_call_dispatcher() {
