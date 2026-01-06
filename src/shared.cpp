@@ -48,14 +48,15 @@ void shared_vars::listen_for_renderer_socket_and_call_dispatcher() {
     shared_vars::renderer_ready_dispatcher.emit();
 }
 
-namespace parameters {
+namespace working_parameters {
     float qr_code_distance = 0;
     float qr_code_inverse_proportion = 0;
-    float webcam_fov_deg = 0;
     float lenticule_density = 0;
-    float index_of_refraction = 1.5;
     float green_to_red_line_distance = 0;
-    float horizontal_displacement = 0;
-    float vertical_displacement = 0;
-    float window_width = 0;
+}
+
+namespace parameters {
+    float webcam_fov_deg = 0;
+    float pixels_per_lens = 0;
+    float index_of_refraction = 1.5;
 }

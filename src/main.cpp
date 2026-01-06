@@ -48,7 +48,7 @@ void request_cv_process_update() {
 
         if (!shared_vars::is_current_cv_action_face) { 
             // Do QR Code
-            cv_actions::detect_qr(shared_vars::webcam_capture, output, parameters::qr_code_inverse_proportion);
+            cv_actions::detect_qr(shared_vars::webcam_capture, output, working_parameters::qr_code_inverse_proportion);
         } else {
             // Run action
             std::tuple<double, double> left_eye_position_proportion_from_center;

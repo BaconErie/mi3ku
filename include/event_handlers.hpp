@@ -2,6 +2,7 @@
 
 #include <gtk/gtk.h>
 #include <iostream>
+#include <fstream>
 #include <cmath>
 #include <boost/process.hpp>
 

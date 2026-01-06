@@ -1,5 +1,9 @@
 #include "event_handlers.hpp"
 
+// Parameters used to calculate other final parameters
+// These do not need to be saved
+namespace working_parameters {}
+
 void event_handlers::on_calibrate_button_clicked (GtkWidget *widget, gpointer _)
 {
   // Switch to the calibration stack first
@@ -19,7 +23,7 @@ void event_handlers::on_measurements_continue_clicked(GtkWidget *widget, gpointe
   bool was_parse_successful = false;
 
   try {
-    parameters::qr_code_distance = std::stof(qr_code_distance_input);
+    working_parameters::qr_code_distance = std::stof(qr_code_distance_input);
     was_parse_successful = true;
   } catch (const std::invalid_argument& e) {
     std::cerr << "Invalid input for QR code distance: " << e.what() << std::endl;
@@ -33,7 +37,7 @@ void event_handlers::on_measurements_continue_clicked(GtkWidget *widget, gpointe
   was_parse_successful = false;
 
   try {
-    parameters::lenticule_density = std::stof(lenticule_density_input);
+    working_parameters::lenticule_density = std::stof(lenticule_density_input);
     was_parse_successful = true;
   } catch (const std::invalid_argument& e) {
     std::cerr << "Invalid input for lenticule density: " << e.what() << std::endl;
@@ -54,12 +58,12 @@ void event_handlers::on_measurements_continue_clicked(GtkWidget *widget, gpointe
 
   if (!was_parse_successful) return;
 
-  float qr_code_angular_size = std::atan2(QR_CODE_WIDTH/2, parameters::qr_code_distance) * 2 *(180.0/3.141592653589793238463);
-  parameters::webcam_fov_deg = qr_code_angular_size * parameters::qr_code_inverse_proportion;
+  float qr_code_angular_size = std::atan2(QR_CODE_WIDTH/2, working_parameters::qr_code_distance) * 2 *(180.0/3.141592653589793238463);
+  parameters::webcam_fov_deg = qr_code_angular_size * working_parameters::qr_code_inverse_proportion;
 
-  std::cout << "QR Code distance: " << parameters::qr_code_distance << " in." << std::endl;
+  std::cout << "QR Code distance: " << working_parameters::qr_code_distance << " in." << std::endl;
   std::cout << "Webcam FOV: " << qr_code_angular_size << " degrees" << std::endl; 
-  std::cout << "Lenticule density: " << parameters::lenticule_density << " LPI" << std::endl;
+  std::cout << "Lenticule density: " << working_parameters::lenticule_density << " LPI" << std::endl;
   std::cout << "Index of refraction: " << parameters::index_of_refraction << std::endl;
 
   // Tell 3D renderer to display the measurement window
@@ -74,35 +78,44 @@ void event_handlers::on_measurements_continue_clicked(GtkWidget *widget, gpointe
 void event_handlers::on_display_density_continue_clicked(GtkWidget *widget, gpointer _)
 {
 
-  std::string green_to_red_line_distance_input(gtk_editable_get_chars(shared_vars::green_red_line_distance_editable, 0, -1));
-  bool was_parse_successful = false;
+    std::string green_to_red_line_distance_input(gtk_editable_get_chars(shared_vars::green_red_line_distance_editable, 0, -1));
+    bool was_parse_successful = false;
 
-  try {
-    parameters::green_to_red_line_distance = std::stof(green_to_red_line_distance_input);
-    was_parse_successful = true;
-  } catch (const std::invalid_argument& e) {
-    std::cerr << "Invalid input for green to red line distance: " << e.what() << std::endl;
-  }
+    try {
+        working_parameters::green_to_red_line_distance = std::stof(green_to_red_line_distance_input);
+        was_parse_successful = true;
+    } catch (const std::invalid_argument& e) {
+        std::cerr << "Invalid input for green to red line distance: " << e.what() << std::endl;
+    }
 
-  if (!was_parse_successful) return;
+    if (!was_parse_successful) return;
 
-  std::cout << "Distance from green to the red line: " << parameters::green_to_red_line_distance << " in." << std::endl;
+    std::cout << "Distance from green to the red line: " << working_parameters::green_to_red_line_distance << " in." << std::endl;
 
-  // Tell 3D renderer to hide the measurement window
-  std::vector<int64_t> message;
-  message.push_back((int64_t)1);
-  boost::asio::write(shared_vars::socket, boost::asio::buffer(message));
+    // Tell 3D renderer to hide the measurement window
+    std::vector<int64_t> message;
+    message.push_back((int64_t)1);
+    boost::asio::write(shared_vars::socket, boost::asio::buffer(message));
 
-  // Find pixels per lens, and send it to the 3D renderer
-  // Also send the index of refraction
-  float pixels_per_lens = 500.0 / parameters::green_to_red_line_distance / parameters::lenticule_density;
-  std::cout << "Event handlers.cpp. Line 84. pixels_per_lens is " << pixels_per_lens << std::endl;
-  boost::asio::write(shared_vars::socket, boost::asio::buffer({(int64_t)2}));
-  boost::asio::write(shared_vars::socket, boost::asio::buffer({(float_t)pixels_per_lens}));
-  boost::asio::write(shared_vars::socket, boost::asio::buffer({(float_t)parameters::index_of_refraction}));
+    // Find pixels per lens, and send it to the 3D renderer
+    // Also send the index of refraction
+    parameters::pixels_per_lens = 500.0 / working_parameters::green_to_red_line_distance / working_parameters::lenticule_density;
+    std::cout << "Event handlers.cpp. Line 84. pixels_per_lens is " << parameters::pixels_per_lens << std::endl;
+    boost::asio::write(shared_vars::socket, boost::asio::buffer({(int64_t)2}));
+    boost::asio::write(shared_vars::socket, boost::asio::buffer({(float_t)parameters::pixels_per_lens}));
+    boost::asio::write(shared_vars::socket, boost::asio::buffer({(float_t)parameters::index_of_refraction}));
 
-  // Switch to the measurements calibration stack
-  gtk_stack_set_visible_child_name(shared_vars::stack_widget, "main_box");
+    // Write all parameters to a save file
+    std::ofstream save_file("calibration_settings.txt");
+    if (save_file.is_open()) {
+        save_file << parameters::webcam_fov_deg << std::endl;
+        save_file << parameters::pixels_per_lens << std::endl;
+        save_file << parameters::index_of_refraction << std::endl;
+        save_file.close();
+    }
+
+    // Switch to the main menu
+    gtk_stack_set_visible_child_name(shared_vars::stack_widget, "main_box");
 }
 
 void event_handlers::on_start_display_clicked(GtkWidget *widget, gpointer _) {
@@ -125,4 +138,28 @@ void event_handlers::on_start_display_clicked(GtkWidget *widget, gpointer _) {
 void event_handlers::on_renderer_success() {
     shared_vars::is_renderer_active = true;
     gtk_button_set_label(GTK_BUTTON(gtk_builder_get_object(shared_vars::builder, "start_display_button")), "Display active");
+
+    // Check if settings file exists
+    std::ifstream save_file("calibration_settings.txt");
+    if (save_file.is_open()) {
+        std::string line;
+        
+        try {
+            std::getline(save_file, line);
+            parameters::webcam_fov_deg = std::stof(line);
+            std::getline(save_file, line);
+            parameters::pixels_per_lens = std::stof(line);
+            std::getline(save_file, line);
+            parameters::index_of_refraction = std::stof(line);
+        } catch (const std::invalid_argument& e) {
+            std::cerr << "Invalid settings file: " << e.what() << std::endl;
+        }
+
+        save_file.close();
+
+        // Send these settings to the renderer
+        boost::asio::write(shared_vars::socket, boost::asio::buffer({(int64_t)2}));
+        boost::asio::write(shared_vars::socket, boost::asio::buffer({(float_t)parameters::pixels_per_lens}));
+        boost::asio::write(shared_vars::socket, boost::asio::buffer({(float_t)parameters::index_of_refraction}));
+    }
 }

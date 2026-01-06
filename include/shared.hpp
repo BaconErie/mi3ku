@@ -57,14 +57,15 @@ namespace shared_vars {
     void listen_for_renderer_socket_and_call_dispatcher(); // Run this in a new thread, because socket accept blocks.
 }
 
-namespace parameters {
+namespace working_parameters {
     extern float qr_code_distance;
     extern float qr_code_inverse_proportion;
-    extern float webcam_fov_deg;
     extern float lenticule_density;
-    extern float index_of_refraction;
     extern float green_to_red_line_distance;
-    extern float horizontal_displacement;
-    extern float vertical_displacement;
-    extern float window_width;
+}
+
+namespace parameters {
+    extern float webcam_fov_deg;
+    extern float pixels_per_lens;
+    extern float index_of_refraction;
 }
