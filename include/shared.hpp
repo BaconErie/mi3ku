@@ -19,6 +19,8 @@
 #include <iostream>
 
 namespace shared_vars {
+    extern GtkApplication* app;
+
     extern GdkPaintable* webcam_paintable;
 
     extern GtkBuilder *builder;

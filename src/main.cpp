@@ -63,17 +63,42 @@ void request_cv_process_update() {
                 shared_vars::right_eye_horizontal_angle = std::get<0>(right_eye_position_proportion_from_center) * (parameters::webcam_fov_deg / 2.0f);
                 shared_vars::right_eye_vertical_angle = std::get<1>(right_eye_position_proportion_from_center) * (parameters::webcam_fov_deg / 2.0f);
 
+
                 if (shared_vars::is_renderer_active) {
                     std::vector<int64_t> request_code;
                     request_code.push_back((int64_t)4);
-                    boost::asio::write(shared_vars::renderer_socket, boost::asio::buffer(request_code));
+                    
+                    try {
+                        boost::asio::write(shared_vars::renderer_socket, boost::asio::buffer(request_code));
+                    } catch (const boost::system::system_error& e) {
+                        if (e.code() == boost::asio::error::broken_pipe || 
+                            e.code() == boost::asio::error::connection_reset ||
+                            e.code() == boost::asio::error::eof) {
+                            std::cout << "Socket disconnected: " << e.what() << std::endl;
+                            shared_vars::is_renderer_active = false;
 
+                            g_application_quit(G_APPLICATION(shared_vars::app));
+                        }
+                    }
+                    
                     std::vector<double_t> message;
                     message.push_back((double_t)shared_vars::left_eye_horizontal_angle);
                     message.push_back((double_t)shared_vars::left_eye_vertical_angle);
                     message.push_back((double_t)shared_vars::right_eye_horizontal_angle);
                     message.push_back((double_t)shared_vars::right_eye_vertical_angle);
-                    boost::asio::write(shared_vars::renderer_socket, boost::asio::buffer(message));
+
+                    try {
+                        boost::asio::write(shared_vars::renderer_socket, boost::asio::buffer(message));
+                    } catch (const boost::system::system_error& e) {
+                        if (e.code() == boost::asio::error::broken_pipe || 
+                            e.code() == boost::asio::error::connection_reset ||
+                            e.code() == boost::asio::error::eof) {
+                            std::cout << "Socket disconnected: " << e.what() << std::endl;
+                            shared_vars::is_renderer_active = false;
+
+                            g_application_quit(G_APPLICATION(shared_vars::app));
+                        }
+                    }
                 }
             }
         }
@@ -226,29 +251,32 @@ static void deactivate(GtkApplication *app, void *data) {
     shared_vars::webcam_capture.release();
 
     std::cout << "Tell renderer to quit" << std::endl;
-    boost::asio::write(shared_vars::renderer_socket, boost::asio::buffer({(int64_t)5}));    
+
+    if (shared_vars::is_renderer_active && shared_vars::renderer_socket.is_open()) {
+        boost::asio::write(shared_vars::renderer_socket, boost::asio::buffer({(int64_t)5}));
+    } else {
+        std::cout << "Renderer already inactive, skipping quit message." << std::endl;
+    }
 }
 
 int
 main (int    argc,
       char **argv)
 {
-    GtkApplication *app;
-
     GMainLoop *main_loop;
     main_loop = g_main_loop_new(NULL, FALSE);
 
     int status;
 
-    app = gtk_application_new ("org.gtk.example", G_APPLICATION_DEFAULT_FLAGS);
-    g_signal_connect (app, "activate", G_CALLBACK (activate), NULL);
-    g_signal_connect (app, "shutdown", G_CALLBACK (deactivate), NULL);
+    shared_vars::app = gtk_application_new ("org.gtk.example", G_APPLICATION_DEFAULT_FLAGS);
+    g_signal_connect (shared_vars::app, "activate", G_CALLBACK (activate), NULL);
+    g_signal_connect (shared_vars::app, "shutdown", G_CALLBACK (deactivate), NULL);
 
-    status = g_application_run (G_APPLICATION (app), argc, argv);
+    status = g_application_run (G_APPLICATION (shared_vars::app), argc, argv);
 
     std::cout << "Main loop has exited. Line 241. Trying unref" << std::endl;
 
-    g_object_unref (app);
+    g_object_unref (shared_vars::app);
 
     std::cout << "Successfully unrefed app." << std::endl;
 

@@ -1,6 +1,8 @@
 #include "shared.hpp"
 
 namespace shared_vars {
+    GtkApplication* app = nullptr;
+
     GdkPaintable* webcam_paintable = nullptr;
 
     std::mutex webcam_paintable_mutex;
