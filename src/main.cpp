@@ -39,7 +39,7 @@ GdkPaintable* cv_mat_to_paintable(const cv::Mat& mat) {
 }
 
 void request_cv_process_update() {
-    while (true) {
+    while (shared_vars::do_cv_thread_run) {
 
         // Lock the mutex
         shared_vars::webcam_paintable_mutex.lock();
@@ -162,9 +162,7 @@ activate (GtkApplication *app,
         handle_webcam_dispatch();
     });
 
-    std::thread webcam_update_thread(request_cv_process_update);
-
-    webcam_update_thread.detach();
+    shared_vars::cv_process_thread = std::thread(request_cv_process_update);
 
     // Get the CSS provider
     css_provider = gtk_css_provider_new();
@@ -214,6 +212,11 @@ activate (GtkApplication *app,
 
 static void deactivate(GtkApplication *app, void *data) {
     std::cout << "Deactivate triggered. Cleaning up memory." << std::endl;
+    shared_vars::do_cv_thread_run = false;
+
+    std::cout << "Joining thread, waiting for thread end" << std::endl;
+    shared_vars::cv_process_thread.join();
+    std::cout << "Thread ended" << std::endl;
 }
 
 int
@@ -232,7 +235,12 @@ main (int    argc,
     g_signal_connect (app, "shutdown", G_CALLBACK (deactivate), NULL);
 
     status = g_application_run (G_APPLICATION (app), argc, argv);
+
+    std::cout << "Main loop has exited. Line 241. Trying unref" << std::endl;
+
     g_object_unref (app);
+
+    std::cout << "Successfully unrefed app." << std::endl;
 
     return status;
 }

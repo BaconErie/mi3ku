@@ -13,6 +13,8 @@
 #include <boost/process.hpp>
 
 #include <mutex>
+#include <atomic>
+#include <thread>
 
 namespace shared_vars {
     extern GdkPaintable* webcam_paintable;
@@ -37,7 +39,9 @@ namespace shared_vars {
     extern GtkEditable* horizontal_displacement_editable;
     extern GtkEditable* vertical_displacement_editable;
 
+    extern std::thread cv_process_thread;
     extern bool is_current_cv_action_face;
+    extern std::atomic<bool> do_cv_thread_run;
 
     extern boost::asio::io_context io_context;
     extern boost::asio::ip::tcp::socket socket;

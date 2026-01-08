@@ -21,7 +21,9 @@ namespace shared_vars {
     GtkEditable* horizontal_displacement_editable = nullptr;
     GtkEditable* vertical_displacement_editable = nullptr;
 
+    std::thread cv_process_thread;
     bool is_current_cv_action_face = true;
+    std::atomic<bool> do_cv_thread_run{true};
 
     boost::asio::io_context io_context;
     boost::asio::ip::tcp::socket socket(io_context);
