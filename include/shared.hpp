@@ -20,6 +20,7 @@
 
 namespace shared_vars {
     extern GtkApplication* app;
+    extern GtkWidget* main_window;
 
     extern GdkPaintable* webcam_paintable;
 

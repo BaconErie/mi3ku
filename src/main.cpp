@@ -145,7 +145,6 @@ static void
 activate (GtkApplication *app,
           void        *_)
 {
-    GtkWidget *window;
     GtkCssProvider *css_provider;
     GError *error = NULL;
 
@@ -159,8 +158,8 @@ activate (GtkApplication *app,
 
 
     // Get the main window from the builder
-    window = GTK_WIDGET (gtk_builder_get_object (shared_vars::builder, "main_window"));
-    gtk_window_set_application (GTK_WINDOW (window), app);
+    shared_vars::main_window = GTK_WIDGET (gtk_builder_get_object (shared_vars::builder, "main_window"));
+    gtk_window_set_application (GTK_WINDOW (shared_vars::main_window), app);
 
     // Set up webcam image variables
     shared_vars::main_webcam_image = GTK_PICTURE(gtk_builder_get_object (shared_vars::builder, "main_webcam_image"));
@@ -195,7 +194,7 @@ activate (GtkApplication *app,
     css_provider = gtk_css_provider_new();
     gtk_css_provider_load_from_path(css_provider, "./ui/style.css");
 
-    gtk_style_context_add_provider_for_display(gtk_widget_get_display(window),
+    gtk_style_context_add_provider_for_display(gtk_widget_get_display(shared_vars::main_window),
                                               GTK_STYLE_PROVIDER(css_provider),
                                               GTK_STYLE_PROVIDER_PRIORITY_USER);
 
@@ -207,11 +206,13 @@ activate (GtkApplication *app,
     GtkWidget *fov_calibration_capture_button = GTK_WIDGET(gtk_builder_get_object(shared_vars::builder, "fov_calibration_capture_button"));
     GtkWidget *display_density_continue_button = GTK_WIDGET(gtk_builder_get_object(shared_vars::builder, "display_density_continue_button"));
     GtkWidget *measurements_continue_button = GTK_WIDGET(gtk_builder_get_object(shared_vars::builder, "measurements_continue_button"));
+    GtkWidget *change_object_button = GTK_WIDGET(gtk_builder_get_object(shared_vars::builder, "change_button"));
 
     g_signal_connect(calibrate_button, "clicked", G_CALLBACK(event_handlers::on_calibrate_button_clicked), NULL);
     g_signal_connect(fov_calibration_capture_button, "clicked", G_CALLBACK(event_handlers::on_fov_calibration_capture_clicked), NULL);
     g_signal_connect(display_density_continue_button, "clicked", G_CALLBACK(event_handlers::on_display_density_continue_clicked), NULL);
     g_signal_connect(measurements_continue_button, "clicked", G_CALLBACK(event_handlers::on_measurements_continue_clicked), NULL);
+    g_signal_connect(change_object_button, "clicked", G_CALLBACK(event_handlers::on_change_object_clicked), NULL);
 
     // Set up the entry pointers
     shared_vars::qr_code_distance_editable = GTK_EDITABLE(gtk_builder_get_object(shared_vars::builder, "qr_code_distance_entry"));
@@ -224,7 +225,7 @@ activate (GtkApplication *app,
 
     // Show the window
 
-    gtk_window_present (GTK_WINDOW (window));
+    gtk_window_present (GTK_WINDOW (shared_vars::main_window));
 
     // Start the renderer
     shared_vars::acceptor.open(shared_vars::endpoint.protocol());

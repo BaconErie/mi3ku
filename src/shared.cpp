@@ -2,6 +2,7 @@
 
 namespace shared_vars {
     GtkApplication* app = nullptr;
+    GtkWidget* main_window = nullptr;
 
     GdkPaintable* webcam_paintable = nullptr;
 
