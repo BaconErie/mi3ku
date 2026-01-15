@@ -17,6 +17,7 @@
 #include <thread>
 #include <fstream>
 #include <iostream>
+#include <queue>
 
 namespace shared_vars {
     extern GtkApplication* app;
@@ -55,10 +56,16 @@ namespace shared_vars {
 
     extern bool is_renderer_active;
 
-    extern double left_eye_horizontal_angle;
-    extern double right_eye_horizontal_angle;
-    extern double left_eye_vertical_angle;
-    extern double right_eye_vertical_angle;
+    extern int BUFFER_SIZE;
+    extern std::queue<double> left_eye_horizontal_angle_buffer;
+    extern std::queue<double> right_eye_horizontal_angle_buffer;
+    extern std::queue<double> left_eye_vertical_angle_buffer;
+    extern std::queue<double> right_eye_vertical_angle_buffer;
+    extern double left_eye_horizontal_angle_buffer_sum;
+    extern double right_eye_horizontal_angle_buffer_sum;
+    extern double left_eye_vertical_angle_buffer_sum;
+    extern double right_eye_vertical_angle_buffer_sum;
+
 
     extern boost::process::child* renderer_program;
 

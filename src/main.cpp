@@ -58,10 +58,42 @@ void request_cv_process_update() {
             bool result = cv_actions::detect_face(shared_vars::face_detector_pointer, shared_vars::bounding_box, shared_vars::webcam_capture, output, left_eye_position_proportion_from_center, right_eye_position_proportion_from_center);
             
             if (result) {
-                shared_vars::left_eye_horizontal_angle = std::get<0>(left_eye_position_proportion_from_center) * (parameters::webcam_fov_deg / 2.0f);
-                shared_vars::left_eye_vertical_angle = std::get<1>(left_eye_position_proportion_from_center) * (parameters::webcam_fov_deg / 2.0f);
-                shared_vars::right_eye_horizontal_angle = std::get<0>(right_eye_position_proportion_from_center) * (parameters::webcam_fov_deg / 2.0f);
-                shared_vars::right_eye_vertical_angle = std::get<1>(right_eye_position_proportion_from_center) * (parameters::webcam_fov_deg / 2.0f);
+                double left_eye_horizontal_angle = std::get<0>(left_eye_position_proportion_from_center) * (parameters::webcam_fov_deg / 2.0f);
+                double left_eye_vertical_angle = std::get<1>(left_eye_position_proportion_from_center) * (parameters::webcam_fov_deg / 2.0f);
+                double right_eye_horizontal_angle = std::get<0>(right_eye_position_proportion_from_center) * (parameters::webcam_fov_deg / 2.0f);
+                double right_eye_vertical_angle = std::get<1>(right_eye_position_proportion_from_center) * (parameters::webcam_fov_deg / 2.0f);
+
+                shared_vars::left_eye_horizontal_angle_buffer_sum += left_eye_horizontal_angle;
+                shared_vars::left_eye_horizontal_angle_buffer.push(left_eye_horizontal_angle);
+                shared_vars::left_eye_vertical_angle_buffer_sum += left_eye_vertical_angle;
+                shared_vars::left_eye_vertical_angle_buffer.push(left_eye_vertical_angle);
+                shared_vars::right_eye_horizontal_angle_buffer_sum += right_eye_horizontal_angle;
+                shared_vars::right_eye_horizontal_angle_buffer.push(right_eye_horizontal_angle);
+                shared_vars::right_eye_vertical_angle_buffer_sum += right_eye_vertical_angle;
+                shared_vars::right_eye_vertical_angle_buffer.push(right_eye_vertical_angle);
+
+                std::cout << shared_vars::left_eye_horizontal_angle_buffer.size() << std::endl;
+
+                if (shared_vars::left_eye_horizontal_angle_buffer.size() > shared_vars::BUFFER_SIZE) {
+                    shared_vars::left_eye_horizontal_angle_buffer_sum -= shared_vars::left_eye_horizontal_angle_buffer.front();
+                    shared_vars::left_eye_horizontal_angle_buffer.pop();
+                }
+
+                if (shared_vars::left_eye_vertical_angle_buffer.size() > shared_vars::BUFFER_SIZE) {
+                    shared_vars::left_eye_vertical_angle_buffer_sum -= shared_vars::left_eye_vertical_angle_buffer.front();
+                    shared_vars::left_eye_vertical_angle_buffer.pop();
+                }
+
+                if (shared_vars::right_eye_horizontal_angle_buffer.size() > shared_vars::BUFFER_SIZE) {
+                    shared_vars::right_eye_horizontal_angle_buffer_sum -= shared_vars::right_eye_horizontal_angle_buffer.front();
+                    shared_vars::right_eye_horizontal_angle_buffer.pop();
+                }
+
+                if (shared_vars::right_eye_vertical_angle_buffer.size() > shared_vars::BUFFER_SIZE) {
+                    shared_vars::right_eye_vertical_angle_buffer_sum -= shared_vars::right_eye_vertical_angle_buffer.front();
+                    shared_vars::right_eye_vertical_angle_buffer.pop();
+                }
+
 
 
                 if (shared_vars::is_renderer_active) {
@@ -80,12 +112,18 @@ void request_cv_process_update() {
                             g_application_quit(G_APPLICATION(shared_vars::app));
                         }
                     }
+
+                    double avg_left_eye_horizontal_angle = shared_vars::left_eye_horizontal_angle_buffer_sum / shared_vars::left_eye_horizontal_angle_buffer.size();
+                    double avg_left_eye_vertical_angle = shared_vars::left_eye_vertical_angle_buffer_sum / shared_vars::left_eye_vertical_angle_buffer.size();
+                    double avg_right_eye_horizontal_angle = shared_vars::right_eye_horizontal_angle_buffer_sum / shared_vars::right_eye_horizontal_angle_buffer.size();
+                    double avg_right_eye_vertical_angle = shared_vars::right_eye_vertical_angle_buffer_sum / shared_vars::right_eye_vertical_angle_buffer.size();
                     
+
                     std::vector<double_t> message;
-                    message.push_back((double_t)shared_vars::left_eye_horizontal_angle);
-                    message.push_back((double_t)shared_vars::left_eye_vertical_angle);
-                    message.push_back((double_t)shared_vars::right_eye_horizontal_angle);
-                    message.push_back((double_t)shared_vars::right_eye_vertical_angle);
+                    message.push_back(avg_left_eye_horizontal_angle);
+                    message.push_back(avg_left_eye_vertical_angle);
+                    message.push_back(avg_right_eye_horizontal_angle);
+                    message.push_back(avg_right_eye_vertical_angle);
 
                     try {
                         boost::asio::write(shared_vars::renderer_socket, boost::asio::buffer(message));

@@ -37,10 +37,15 @@ namespace shared_vars {
 
     GtkBuilder *builder = nullptr;
 
-    double left_eye_horizontal_angle = 0;
-    double right_eye_horizontal_angle = 0;
-    double left_eye_vertical_angle = 0;
-    double right_eye_vertical_angle = 0;
+    int BUFFER_SIZE = 5;
+    std::queue<double> left_eye_horizontal_angle_buffer;
+    std::queue<double> right_eye_horizontal_angle_buffer;
+    std::queue<double> left_eye_vertical_angle_buffer;
+    std::queue<double> right_eye_vertical_angle_buffer;
+    double left_eye_horizontal_angle_buffer_sum = 0.0;
+    double right_eye_horizontal_angle_buffer_sum = 0.0;
+    double left_eye_vertical_angle_buffer_sum = 0.0;
+    double right_eye_vertical_angle_buffer_sum = 0.0;
 
     boost::process::child* renderer_program = nullptr;
 }
