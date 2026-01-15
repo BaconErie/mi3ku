@@ -72,8 +72,6 @@ void request_cv_process_update() {
                 shared_vars::right_eye_vertical_angle_buffer_sum += right_eye_vertical_angle;
                 shared_vars::right_eye_vertical_angle_buffer.push(right_eye_vertical_angle);
 
-                std::cout << shared_vars::left_eye_horizontal_angle_buffer.size() << std::endl;
-
                 if (shared_vars::left_eye_horizontal_angle_buffer.size() > shared_vars::BUFFER_SIZE) {
                     shared_vars::left_eye_horizontal_angle_buffer_sum -= shared_vars::left_eye_horizontal_angle_buffer.front();
                     shared_vars::left_eye_horizontal_angle_buffer.pop();
